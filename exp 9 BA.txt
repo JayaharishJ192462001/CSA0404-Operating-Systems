@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+int main() {
+    int n = 3, m = 3;
+
+    // Allocation matrix
+    int alloc[3][3] = {
+        {0, 1, 0},  // P0
+        {2, 0, 0},  // P1
+        {3, 0, 2}   // P2
+    };
+
+    // Maximum demand matrix
+    int max[3][3] = {
+        {7, 5, 3},  // P0
+        {3, 2, 2},  // P1
+        {9, 0, 2}   // P2
+    };
+
+    // Available resources (modified to make system safe)
+    int avail[3] = {3, 3, 3};  // Must be enough to allow safe sequence
+
+    int need[3][3], finish[3] = {0, 0, 0};
+    int safeSeq[3], count = 0;
+    int i, j;
+
+    // Step 1: Calculate Need Matrix
+    for (i = 0; i < n; i++)
+        for (j = 0; j < m; j++)
+            need[i][j] = max[i][j] - alloc[i][j];
+
+    // Step 2: Banker's Algorithm to find safe sequence
+    while (count < n) {
+        int found = 0;
+        for (i = 0; i < n; i++) {
+            if (finish[i] == 0) {
+                int canRun = 1;
+                for (j = 0; j < m; j++) {
+                    if (need[i][j] > avail[j]) {
+                        canRun = 0;
+                        break;
+                    }
+                }
+                if (canRun) {
+                    // Process i can run, release its resources
+                    for (j = 0; j < m; j++)
+                        avail[j] += alloc[i][j];
+
+                    safeSeq[count++] = i;
+                    finish[i] = 1;
+                    found = 1;
+                }
+            }
+        }
+        if (!found) {
+            printf("System is NOT in a safe state.\n");
+            return 0;
+        }
+    }
+
+    // Step 3: Print safe sequence
+    printf("System is in a SAFE state.\nSafe sequence: ");
+    for (i = 0; i < n; i++)
+        printf("P%d ", safeSeq[i]);
+    printf("\n");
+
+    return 0;
+}
+
